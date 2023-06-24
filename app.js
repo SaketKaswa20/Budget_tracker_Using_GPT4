@@ -1,92 +1,40 @@
-document.getElementById('expense-form').addEventListener('submit', addExpense);
-document.getElementById('download-data').addEventListener('click', downloadData);
-
-function addExpense(e) {
-  e.preventDefault();
-
-  const title = document.getElementById('title').value;
-  const amount = document.getElementById('amount').value;
-  const category = document.getElementById('category').value;
-  const date = document.getElementById('date').value;
-
-  const expense = { title, amount, category, date };
-
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td class="border p-2">${expense.title}</td>
-    <td class="border p-2">${expense.amount}</td>
-    <td class="border p-2">${expense.category}</td>
-    <td class="border p-2">${expense.date}</td>
-    <td class="border p-2">
-      <button class="edit bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded">Edit</button>
-      <button class="delete bg-red-500 hover:bg-red-600 px-2 py-1 rounded">Delete</button>
-    </td>
- `;
-
-  row.querySelector('.edit').addEventListener('click', () => editExpense(row, expense));
-  row.querySelector('.delete').addEventListener('click', () => deleteExpense(row));
-
-  document.querySelector('#expense-table tbody').appendChild(row);
-}
-
-function editExpense(row, expense) {
-  document.getElementById('title').value = expense.title;
-  document.getElementById('amount').value = expense.amount;
-  document.getElementById('category').value = expense.category;
-  document.getElementById('date').value = expense.date;
-
-  document.getElementById('expense-form').removeEventListener('submit', addExpense);
-  document.getElementById('expense-form').addEventListener('submit', updateExpense);
-
-  function updateExpense(e) {
-    e.preventDefault();
-
-    expense.title = document.getElementById('title').value;
-    expense.amount = document.getElementById('amount').value;
-    expense.category = document.getElementById('category').value;
-    expense.date = document.getElementById('date').value;
-
-    row.innerHTML = `
-      <td class="border p-2">${expense.title}</td>
-      <td class="border p-2">${expense.amount}</td>
-      <td class="border p-2">${expense.category}</td>
-      <td class="border p-2">${expense.date}</td>
-      <td class="border p-2">
-        <button class="edit bg-yellow-500 hover:bg-yellow-600 px-2 py-1 rounded">Edit</button>
-        <button class="delete bg-red-500 hover:bg-red-600 px-2 py-1 rounded">Delete</button>
-      </td>
-    `;
-
-    row.querySelector('.edit').addEventListener('click', () => editExpense(row, expense));
-    row.querySelector('.delete').addEventListener('click', () => deleteExpense(row));
-
-    document.getElementById('expense-form').removeEventListener('submit', updateExpense);
-    document.getElementById('expense-form').addEventListener('submit', addExpense);
-  }
-}
-
-function deleteExpense(row) {
-  if (confirm('Are you sure you want to delete this expense?')) {
-    row.remove();
-  }
-}
-
-function downloadData() {
-  const doc = new jsPDF();
-  const headers = ['Title', 'Amount', 'Category', 'Date'];
-  const rows = Array.from(document.querySelectorAll('#expense-table tbody tr')).map(row => {
-    return Array.from(row.querySelectorAll('td:not(:last-child)')).map(cell => cell.textContent);
-  });
-
-  doc.autoTable({
-    head: [headers],
-    body: rows,
-    theme: 'grid',
-    styles: { font: 'Helvetica', fontSize: 10, textColor: [255, 255, 255] },
-    headStyles: { fillColor: [0, 0, 0] },
-    bodyStyles: { fillColor: [60, 60, 60] },
-    alternateRowStyles: { fillColor: [80, 80, 80] },
-  });
-
-  doc.save('budget-data.pdf');
-}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-800 text-white">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Budget Tracker</h1>
+    <form id="expense-form" class="mb-8">
+      <div class="grid grid-cols-4 gap-4">
+        <input type="text" id="title" placeholder="Title" required class="col-span-1 p-2 bg-gray-700 rounded">
+        <input type="number" id="amount" placeholder="Amount" required class="col-span-1 p-2 bg-gray-700 rounded">
+        <input type="text" id="category" placeholder="Category" required class="col-span-1 p-2 bg-gray-700 rounded">
+        <input type="date" id="date" required class="col-span-1 p-2 bg-gray-700 rounded">
+      </div>
+      <button type="submit" class="bg-green-500 hover:bg-green-600 px-4 py-2 mt-4 rounded">Add Expense</button>
+    </form>
+    <table id="expense-table" class="w-full mb-8">
+      <thead>
+        <tr>
+          <th class="border-b-2 border-gray-600 p-2">Title</th>
+          <th class="border-b-2 border-gray-600 p-2">Amount</th>
+          <th class="border-b-2 border-gray-600 p-2">Category</th>
+          <th class="border-b-2 border-gray-600 p-2">Date</th>
+          <th class="border-b-2 border-gray-600 p-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="download-data-excel" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">Download Data (Excel)</button>
+    <button id="download-data-pdf" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded">Download Data (PDF)</button>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
